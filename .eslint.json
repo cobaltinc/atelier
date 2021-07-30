@@ -1,0 +1,19 @@
+{
+  "plugins": ["prettier"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:prettier/recommended",
+    "eslint-config-prettier"
+  ],
+  "rulesDirectory": ["eslint-plugin-prettier"],
+  "rules": {
+    "ordered-imports": false,
+    "object-literal-sort-keys": false,
+    "interface-name": false,
+    "member-ordering": false,
+    "no-console": false,
+    "jsx-boolean-value": [true, "never"],
+    "jsx-no-lambda": false,
+    "no-angle-bracket-type-assertion": false
+  }
+}
