@@ -8,3 +8,4 @@ out
 *.log
 .vscode
 report.*.json
+.parcel-cache

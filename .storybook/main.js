@@ -1,6 +1,6 @@
 const path = require('path');
 
-const resolvePath = (_path) => path.join(process.cwd(), _path);
+const resolvePath = _path => path.join(process.cwd(), _path);
 
 module.exports = {
   typescript: {
@@ -19,6 +19,5 @@ module.exports = {
     '@storybook/addon-viewport/register',
     '@storybook/addon-storysource',
     '@storybook/addon-links/register',
-    '@storybook/preset-scss',
   ],
 };

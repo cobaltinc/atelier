@@ -123,6 +123,10 @@ const Atelier = ({
   }, [canvasRef.current]);
 
   useEffect(() => {
+    setCurrentCommand(command);
+  }, [command]);
+
+  useEffect(() => {
     setCurrentColor(color);
   }, [color]);
 
@@ -264,52 +268,19 @@ const Atelier = ({
   };
 
   return (
-    <>
-      <button id="laser" onClick={() => setCurrentCommand("laser")}>
-        Laser
-      </button>
-      <button id="pen" onClick={() => setCurrentCommand("pen")}>
-        Pen
-      </button>
-      <button id="brush" onClick={() => setCurrentCommand("brush")}>
-        Brush
-      </button>
-      <button id="eraser" onClick={() => setCurrentCommand("eraser")}>
-        Eraser
-      </button>
-      <button id="highlighter" onClick={() => setCurrentCommand("highlighter")}>
-        Highlighter
-      </button>
-      <button id="clear" onClick={() => handleClear()}>
-        Clear
-      </button>
-      <input
-        type="color"
-        onChange={(e) => setCurrentColor(e.currentTarget.value)}
-      />
-      <input
-        type="range"
-        onChange={(e) => setCurrentLineWidth(parseInt(e.currentTarget.value))}
-        defaultValue="4"
-        min="1"
-        max="40"
-        step="1"
-      />
-      <br />
-      <canvas
-        ref={canvasRef}
-        onMouseDown={enableDraw ? handleDrawStart : undefined}
-        onMouseMove={enableDraw ? handleDrawing : undefined}
-        onMouseUp={enableDraw ? handleDrawFinish : undefined}
-        onTouchStart={enableDraw ? handleDrawStart : undefined}
-        onTouchMove={enableDraw ? handleDrawing : undefined}
-        onTouchEnd={enableDraw ? handleDrawFinish : undefined}
-        style={{ ...style, ...canvasDefaultStyle, ...canvasSizeStyle }}
-        className={className}
-      />
-    </>
+    <canvas
+      ref={canvasRef}
+      onMouseDown={enableDraw ? handleDrawStart : undefined}
+      onMouseMove={enableDraw ? handleDrawing : undefined}
+      onMouseUp={enableDraw ? handleDrawFinish : undefined}
+      onTouchStart={enableDraw ? handleDrawStart : undefined}
+      onTouchMove={enableDraw ? handleDrawing : undefined}
+      onTouchEnd={enableDraw ? handleDrawFinish : undefined}
+      style={{ ...style, ...canvasDefaultStyle, ...canvasSizeStyle }}
+      className={className}
+    />
   );
 };
 
-export { Atelier };
+export default Atelier;
 export type { EventSource };
