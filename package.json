@@ -4,7 +4,6 @@
   "author": "Cobalt. Inc.",
   "license": "MIT",
   "description": "Drawing on canvas",
-  "main": "dist/main.js",
   "module": "dist/module.js",
   "types": "dist/types.d.ts",
   "source": "src/index.ts",
