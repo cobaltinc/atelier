@@ -7,7 +7,7 @@ interface Coord {
   oldY: number;
 }
 
-class HighlighterPlugin extends Plugin {
+export class HighlighterPlugin extends Plugin {
   coord: Coord = { x: 0, y: 0, oldX: 0, oldY: 0 };
   midCoord: Coord = { x: 0, y: 0, oldX: 0, oldY: 0 };
   screenCanvas?: HTMLCanvasElement;
@@ -78,5 +78,3 @@ class HighlighterPlugin extends Plugin {
     }
   }
 }
-
-export default HighlighterPlugin;

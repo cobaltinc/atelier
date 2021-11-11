@@ -11,7 +11,7 @@ interface BrushPluginInterface extends PluginInterface {
   enablePressure?: boolean;
 }
 
-class BrushPlugin extends Plugin {
+export class BrushPlugin extends Plugin {
   coord: Coord = { x: 0, y: 0, oldX: 0, oldY: 0 };
   midCoord: Coord = { x: 0, y: 0, oldX: 0, oldY: 0 };
   oldLineWidth: number = 0;
@@ -68,5 +68,3 @@ class BrushPlugin extends Plugin {
     }
   }
 }
-
-export default BrushPlugin;

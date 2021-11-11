@@ -1,6 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Atelier, BrushPlugin, EraserPlugin, HighlighterPlugin, LaserPlugin, PenPlugin } from '../src';
-import { AtelierRef } from '../src/atelier';
+import { Atelier, AtelierRef, BrushPlugin, EraserPlugin, HighlighterPlugin, LaserPlugin, PenPlugin } from '../dist';
 
 export default {
   component: Atelier,

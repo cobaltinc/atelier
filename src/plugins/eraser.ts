@@ -1,6 +1,6 @@
 import { DrawingInterface, Plugin, PluginInterface } from './plugin';
 
-class EraserPlugin extends Plugin {
+export class EraserPlugin extends Plugin {
   prevX?: number;
   prevY?: number;
 
@@ -34,5 +34,3 @@ class EraserPlugin extends Plugin {
     }
   }
 }
-
-export default EraserPlugin;

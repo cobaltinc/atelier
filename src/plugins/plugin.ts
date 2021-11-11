@@ -18,7 +18,7 @@ interface DrawingInterface {
   state: DrawingState;
 }
 
-class Plugin implements PluginInterface {
+export class Plugin implements PluginInterface {
   name: string;
   canvas?: HTMLCanvasElement;
 
@@ -52,5 +52,4 @@ class Plugin implements PluginInterface {
   }
 }
 
-export { Plugin };
 export type { PluginInterface, DrawingState, DrawingInterface };

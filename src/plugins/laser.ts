@@ -1,6 +1,6 @@
 import { DrawingInterface, Plugin, PluginInterface } from './plugin';
 
-class LaserPlugin extends Plugin {
+export class LaserPlugin extends Plugin {
   snapshotImage?: ImageData;
 
   constructor(initialValues?: PluginInterface) {
@@ -43,5 +43,3 @@ class LaserPlugin extends Plugin {
     }
   }
 }
-
-export default LaserPlugin;

@@ -1,11 +1,11 @@
 {
   "name": "@cobaltinc/atelier",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "author": "Cobalt. Inc.",
   "license": "MIT",
   "description": "Drawing on canvas",
-  "module": "dist/module.js",
-  "types": "dist/types.d.ts",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "source": "src/index.ts",
   "engines": {
     "node": ">=14.x"
@@ -15,10 +15,12 @@
     "url": "https://github.com/cobaltinc/atelier"
   },
   "scripts": {
-    "build": "parcel build",
+    "build": "rimraf dist && parcel build",
     "clean": "rimraf node_modules dist",
+    "type-check": "tsc --noEmit",
     "storybook": "start-storybook -p 6006",
-    "deploy-storybook": "storybook-to-ghpages"
+    "deploy-storybook": "storybook-to-ghpages",
+    "prepublishOnly": "rimraf dist && parcel build"
   },
   "dependencies": {
     "react": "17.0.2",

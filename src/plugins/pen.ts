@@ -7,7 +7,7 @@ interface Coord {
   oldY: number;
 }
 
-class PenPlugin extends Plugin {
+export class PenPlugin extends Plugin {
   coord: Coord = { x: 0, y: 0, oldX: 0, oldY: 0 };
   midCoord: Coord = { x: 0, y: 0, oldX: 0, oldY: 0 };
 
@@ -52,5 +52,3 @@ class PenPlugin extends Plugin {
     }
   }
 }
-
-export default PenPlugin;
