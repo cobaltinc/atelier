@@ -1,9 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
-import { EventBus } from "./event-bus";
-import { PenPlugin, Plugin } from "./plugins";
-import { EventSource } from "./plugins/plugin";
-
-const VERSION = "v1";
+import React, { forwardRef, Ref, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { PenPlugin, Plugin } from './plugins';
+import { DrawEvent, PluginMap } from './types';
+import { calculateCoord, calculatePressure } from './utils';
 
 interface AtelierProps {
   command?: string;
@@ -14,89 +12,48 @@ interface AtelierProps {
   enableDraw?: boolean;
   enablePressure?: boolean;
   plugins?: Plugin[];
-  eventBus?: EventBus;
-  onEvent?: (source: EventSource) => void;
   style?: React.CSSProperties;
   className?: string;
-  debug?: boolean;
 }
 
-const calculateCoord = (
-  e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>,
-  canvas: HTMLCanvasElement
-) => {
-  let x = 0;
-  let y = 0;
-
-  if ("touches" in e && e.touches && e.touches[0]) {
-    x = e.touches[0].pageX;
-    y = e.touches[0].pageY;
-  } else if ("pageX" in e) {
-    x = e.pageX;
-    y = e.pageY;
-  }
-
-  const rect = canvas.getBoundingClientRect();
-
-  return {
-    x: x - rect.left - window.scrollX,
-    y: y - rect.top - window.scrollY,
-  };
+export type AtelierRef = {
+  clear(): void;
 };
 
-const calculatePressure = (
-  e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
+const Atelier = (
+  { command = 'pen', color = '#000000', lineWidth = 2, width = 800, height = 600, enableDraw = true, enablePressure = false, plugins = [new PenPlugin()], style, className }: AtelierProps,
+  ref: Ref<AtelierRef>,
 ) => {
-  let pressure = 1.0;
-
-  if ("touches" in e && e.touches && e.touches[0]) {
-    if ((e as any).touches[0].touchType === "stylus") {
-      pressure = (e as any).touches[0]["force"] || 0.1;
-    } else {
-      pressure = (e as any).touches[0]["force"] || 1;
-    }
-  }
-
-  return pressure;
-};
-
-const Atelier = ({
-  command = "pen",
-  color = "#000000",
-  lineWidth = 2,
-  width = 800,
-  height = 600,
-  enableDraw = true,
-  enablePressure = false,
-  plugins = [new PenPlugin()],
-  eventBus,
-  onEvent,
-  style,
-  className,
-  debug = false,
-}: AtelierProps) => {
-  const [currentCommand, setCurrentCommand] = useState<string>(command);
-  const [currentLineWidth, setCurrentLineWidth] = useState<number>(lineWidth);
-  const [currentColor, setCurrentColor] = useState<string>(color);
-  const [currentPlugins, setCurrentPlugins] = useState<{
-    [key: string]: Plugin;
-  }>({});
-  const [drawing, setDrawing] = useState<boolean>(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [currentPlugins, setCurrentPlugins] = useState<PluginMap>(
+    plugins.reduce(
+      (a, b) => ({
+        ...a,
+        [b.name]: b,
+      }),
+      {},
+    ),
+  );
 
-  const scale = typeof window === "undefined" ? 1 : window.devicePixelRatio;
+  const scale = typeof window === 'undefined' ? 1 : window.devicePixelRatio;
 
-  const canvasDefaultStyle: React.CSSProperties = {
-    userSelect: "none",
-    WebkitUserSelect: "none",
-    touchAction: "none",
-    msTouchAction: "none",
-  };
+  const canvasDefaultStyle: React.CSSProperties = useMemo(
+    () => ({
+      userSelect: 'none',
+      WebkitUserSelect: 'none',
+      touchAction: 'none',
+      msTouchAction: 'none',
+    }),
+    [],
+  );
 
-  const canvasSizeStyle = {
-    width,
-    height,
-  };
+  const canvasSizeStyle: React.CSSProperties = useMemo(
+    () => ({
+      width,
+      height,
+    }),
+    [width, height],
+  );
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -104,183 +61,117 @@ const Atelier = ({
     canvasRef.current.width = width * scale;
     canvasRef.current.height = height * scale;
 
-    canvasRef.current.getContext("2d")?.scale(scale, scale);
+    canvasRef.current.getContext('2d')?.scale(scale, scale);
+  }, [scale, width, height]);
 
-    plugins.forEach((plugin) => {
+  useEffect(() => {
+    if (!canvasRef.current) return;
+
+    plugins.forEach(plugin => {
       plugin.canvas = canvasRef.current!;
     });
 
     setCurrentPlugins(
       Object.assign(
         {},
-        ...plugins.map((plugin) => {
+        ...plugins.map(plugin => {
           return {
             [plugin.name]: plugin,
           };
-        })
-      )
+        }),
+      ),
     );
-  }, [canvasRef.current]);
+  }, [plugins]);
 
-  useEffect(() => {
-    setCurrentCommand(command);
-  }, [command]);
+  const handlers = useMemo(() => {
+    let drawing = false;
 
-  useEffect(() => {
-    setCurrentColor(color);
-  }, [color]);
+    const handleDrawStart = (e: DrawEvent) => {
+      e.preventDefault();
+      if (!canvasRef.current) return;
 
-  useEffect(() => {
-    setCurrentLineWidth(lineWidth);
-  }, [lineWidth]);
+      const { x, y } = calculateCoord(e, canvasRef.current);
+      const pressure = enablePressure ? calculatePressure(e) : 1;
+      const touchType = 'touches' in e ? (e as any).touches[0].touchType : undefined;
 
-  useEffect(() => {
-    if (!eventBus) return;
-    eventBus.clear();
-
-    Object.keys(currentPlugins).forEach((name) => {
-      eventBus.on(name, (source) => {
-        const { command, x, y, lineWidth, color, state } = source;
-        currentPlugins[command].draw({
-          x,
-          y,
-          width,
-          height,
-          scale,
-          lineWidth,
-          color,
-          pressure: 1,
-          state,
-        });
+      currentPlugins[command].draw({
+        x,
+        y,
+        width,
+        height,
+        scale,
+        lineWidth,
+        color,
+        pressure,
+        state: 'draw-started',
+        touchType,
       });
-    });
 
-    eventBus.on("clear", () => {
-      canvasRef.current
-        ?.getContext("2d")
-        ?.clearRect(0, 0, width * scale, height * scale);
-    });
-  }, [eventBus, plugins]);
+      drawing = true;
+    };
 
-  // TODO: width, height 변경 처리
+    const handleDrawing = (e: DrawEvent) => {
+      e.preventDefault();
+      if (!canvasRef.current || !drawing) return;
 
-  const handleEvent = (source: EventSource) => {
-    onEvent?.({
-      ...source,
-      version: VERSION,
-    });
-  };
+      const { x, y } = calculateCoord(e, canvasRef.current);
+      const pressure = enablePressure ? calculatePressure(e) : 1;
+      const touchType = 'touches' in e ? (e as any).touches[0].touchType : undefined;
 
-  const handleDrawStart = (
-    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
-  ) => {
-    e.preventDefault();
-    if (!canvasRef.current) return;
+      currentPlugins[command].draw({
+        x,
+        y,
+        width,
+        height,
+        scale,
+        lineWidth,
+        color,
+        pressure,
+        state: 'drawing',
+        touchType,
+      });
+    };
 
-    if (debug) console.log("mouse down");
+    const handleDrawFinish = (e: DrawEvent) => {
+      e.preventDefault();
+      if (!canvasRef.current || !drawing) return;
 
-    const { x, y } = calculateCoord(e, canvasRef.current);
-    const pressure = enablePressure ? calculatePressure(e) : 1;
-    const touchType =
-      "touches" in e ? (e as any).touches[0].touchType : undefined;
+      const { x, y } = calculateCoord(e, canvasRef.current);
+      currentPlugins[command].draw({
+        x,
+        y,
+        width,
+        height,
+        scale,
+        lineWidth,
+        color,
+        state: 'draw-finished',
+      });
 
-    currentPlugins[currentCommand].draw({
-      x,
-      y,
-      width,
-      height,
-      scale,
-      lineWidth: currentLineWidth,
-      color: currentColor,
-      pressure,
-      state: "draw-started",
-      touchType,
-      handleEvent,
-    });
+      drawing = false;
+    };
 
-    setDrawing(true);
-  };
+    return enableDraw
+      ? {
+          onMouseDown: handleDrawStart,
+          onTouchStart: handleDrawStart,
+          onMouseMove: handleDrawing,
+          onTouchMove: handleDrawing,
+          onMouseUp: handleDrawFinish,
+          onTouchEnd: handleDrawFinish,
+        }
+      : {};
+  }, [currentPlugins, command, lineWidth, color]);
 
-  const handleDrawing = (
-    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
-  ) => {
-    e.preventDefault();
-    if (!canvasRef.current || !drawing) return;
+  const handleClear = useCallback(() => {
+    canvasRef.current?.getContext('2d')?.clearRect(0, 0, width, height);
+  }, []);
 
-    if (debug) console.log("mouse move");
+  useImperativeHandle(ref, () => ({
+    clear: handleClear,
+  }));
 
-    const { x, y } = calculateCoord(e, canvasRef.current);
-    const pressure = enablePressure ? calculatePressure(e) : 1;
-    const touchType =
-      "touches" in e ? (e as any).touches[0].touchType : undefined;
-
-    currentPlugins[currentCommand].draw({
-      x,
-      y,
-      width,
-      height,
-      scale,
-      lineWidth: currentLineWidth,
-      color: currentColor,
-      pressure,
-      state: "drawing",
-      touchType,
-      handleEvent,
-    });
-  };
-
-  const handleDrawFinish = (
-    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
-  ) => {
-    e.preventDefault();
-    if (!canvasRef.current || !drawing) return;
-
-    if (debug) console.log("mouse up");
-
-    const { x, y } = calculateCoord(e, canvasRef.current);
-    currentPlugins[currentCommand].draw({
-      x,
-      y,
-      width,
-      height,
-      scale,
-      lineWidth: currentLineWidth,
-      color: currentColor,
-      state: "draw-finished",
-      handleEvent,
-    });
-
-    setDrawing(false);
-  };
-
-  const handleClear = () => {
-    canvasRef.current?.getContext("2d")?.clearRect(0, 0, width, height);
-
-    handleEvent?.({
-      command: "clear",
-      x: 0,
-      y: 0,
-      lineWidth: 0,
-      version: "v1",
-      state: "drawing",
-      color: "",
-    });
-  };
-
-  return (
-    <canvas
-      ref={canvasRef}
-      onMouseDown={enableDraw ? handleDrawStart : undefined}
-      onMouseMove={enableDraw ? handleDrawing : undefined}
-      onMouseUp={enableDraw ? handleDrawFinish : undefined}
-      onTouchStart={enableDraw ? handleDrawStart : undefined}
-      onTouchMove={enableDraw ? handleDrawing : undefined}
-      onTouchEnd={enableDraw ? handleDrawFinish : undefined}
-      style={{ ...style, ...canvasDefaultStyle, ...canvasSizeStyle }}
-      className={className}
-    />
-  );
+  return <canvas ref={canvasRef} {...handlers} style={{ ...canvasDefaultStyle, ...canvasSizeStyle, ...style }} className={className} />;
 };
 
-export default Atelier;
-export type { EventSource };
+export default forwardRef(Atelier);

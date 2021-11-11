@@ -1,4 +1,4 @@
-import { DrawingInterface, Plugin, PluginInterface } from "./plugin";
+import { DrawingInterface, Plugin, PluginInterface } from './plugin';
 
 interface Coord {
   x: number;
@@ -11,18 +11,18 @@ class PenPlugin extends Plugin {
   coord: Coord = { x: 0, y: 0, oldX: 0, oldY: 0 };
   midCoord: Coord = { x: 0, y: 0, oldX: 0, oldY: 0 };
 
-  constructor(initialValues?: Partial<PluginInterface>) {
+  constructor(initialValues?: PluginInterface) {
     super({
       ...initialValues,
-      name: "pen",
+      name: 'pen',
     });
   }
 
   draw(data: DrawingInterface) {
     super.draw(data);
 
-    const { x, y, color, state, handleEvent } = data;
-    const context = this.canvas?.getContext("2d");
+    const { x, y, state } = data;
+    const context = this.canvas?.getContext('2d');
     if (!context) return;
 
     this.coord.x = x;
@@ -35,15 +35,10 @@ class PenPlugin extends Plugin {
     this.midCoord.oldX = this.midCoord.oldX || x;
     this.midCoord.oldY = this.midCoord.oldY || y;
 
-    if (state === "draw-started" || state === "drawing") {
+    if (state === 'draw-started' || state === 'drawing') {
       context.beginPath();
       context.moveTo(this.midCoord.x, this.midCoord.y);
-      context.quadraticCurveTo(
-        this.coord.oldX,
-        this.coord.oldY,
-        this.midCoord.oldX,
-        this.midCoord.oldY
-      );
+      context.quadraticCurveTo(this.coord.oldX, this.coord.oldY, this.midCoord.oldX, this.midCoord.oldY);
       context.stroke();
       context.closePath();
 
@@ -51,19 +46,10 @@ class PenPlugin extends Plugin {
       this.coord.oldY = this.coord.y;
       this.midCoord.oldX = this.midCoord.x;
       this.midCoord.oldY = this.midCoord.y;
-    } else if (state === "draw-finished") {
+    } else if (state === 'draw-finished') {
       this.coord = { x: 0, y: 0, oldX: 0, oldY: 0 };
       this.midCoord = { x: 0, y: 0, oldX: 0, oldY: 0 };
     }
-
-    handleEvent?.({
-      command: this.name,
-      x,
-      y,
-      lineWidth: context.lineWidth,
-      color,
-      state,
-    });
   }
 }
 

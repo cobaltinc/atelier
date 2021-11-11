@@ -1,6 +1,5 @@
 interface PluginInterface {
   name: string;
-  debug: boolean;
   canvas?: HTMLCanvasElement;
 }
 
@@ -17,29 +16,14 @@ interface DrawingInterface {
   lineWidth: number;
   touchType?: string;
   state: DrawingState;
-  handleEvent?: (source: EventSource) => void;
-}
-
-interface EventSource {
-  command: string;
-  x: number;
-  y: number;
-  lineWidth: number;
-  color: string;
-  state: DrawingState;
-  touchType?: string;
-  version?: string;
 }
 
 class Plugin implements PluginInterface {
   name: string;
-  debug: boolean;
   canvas?: HTMLCanvasElement;
 
-  constructor(initialValues?: Partial<PluginInterface>) {
-    this.name = "";
-    this.debug = false;
-
+  constructor(initialValues?: PluginInterface) {
+    this.name = '';
     Object.assign(this, initialValues);
   }
 
@@ -47,24 +31,26 @@ class Plugin implements PluginInterface {
     const context = this.canvas?.getContext("2d");
     if (!context) return;
 
-    context.globalCompositeOperation = "source-over";
-    context.strokeStyle = data.color;
-    context.lineCap = "round";
-    context.lineJoin = "round";
-    context.shadowColor = "";
-    context.shadowOffsetX = 0;
-    context.shadowOffsetY = 0;
-    context.shadowBlur = 0;
-    context.lineWidth = data.lineWidth;
-    context.textAlign = "left";
-    context.textBaseline = "top";
-    context.direction = "ltr";
-    context.lineDashOffset = 0;
-    context.miterLimit = 0;
-    context.globalAlpha = 1;
-    context.fillStyle = data.color;
+    Object.assign(context, {
+      globalCompositeOperation: "source-over",
+      strokeStyle: data.color,
+      lineCap: "round",
+      lineJoin: "round",
+      shadowColor: "",
+      shadowOffsetX: 0,
+      shadowOffsetY: 0,
+      shadowBlur: 0,
+      lineWidth: data.lineWidth,
+      textAlign: "left",
+      textBaseline: "top",
+      direction: "ltr",
+      lineDashOffset: 0,
+      miterLimit: 0,
+      globalAlpha: 1,
+      fillStyle: data.color,
+    })
   }
 }
 
 export { Plugin };
-export type { PluginInterface, DrawingState, DrawingInterface, EventSource };
+export type { PluginInterface, DrawingState, DrawingInterface };
