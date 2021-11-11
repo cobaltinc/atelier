@@ -1,5 +1,5 @@
 interface PluginInterface {
-  name: string;
+  name?: string;
   canvas?: HTMLCanvasElement;
 }
 
@@ -19,7 +19,7 @@ interface DrawingInterface {
 }
 
 export class Plugin implements PluginInterface {
-  name: string;
+  name?: string;
   canvas?: HTMLCanvasElement;
 
   constructor(initialValues?: PluginInterface) {

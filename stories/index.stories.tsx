@@ -34,7 +34,7 @@ export const Default = () => {
         command={command}
         lineWidth={lineWidth}
         color={color}
-        plugins={[new PenPlugin(), new EraserPlugin(), new LaserPlugin(), new HighlighterPlugin(), new BrushPlugin()]}
+        plugins={[PenPlugin, EraserPlugin, LaserPlugin, HighlighterPlugin, BrushPlugin]}
         enablePressure
         enableDraw
         style={{ border: '1px solid black' }}

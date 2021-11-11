@@ -11,7 +11,7 @@ interface AtelierProps {
   height?: number;
   enableDraw?: boolean;
   enablePressure?: boolean;
-  plugins?: Plugin[];
+  plugins?: typeof Plugin[];
   style?: React.CSSProperties;
   className?: string;
 }
@@ -32,7 +32,7 @@ export const Atelier = forwardRef(
       height = 600,
       enableDraw = true,
       enablePressure = false,
-      plugins = [new PenPlugin()],
+      plugins = [PenPlugin],
       style,
       className,
     }: AtelierProps,
@@ -40,12 +40,14 @@ export const Atelier = forwardRef(
   ) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [currentPlugins, setCurrentPlugins] = useState<PluginMap>(
-      plugins.reduce(
-        (a, b) => ({
-          ...a,
-          [b.name]: b,
-        }),
+      Object.assign(
         {},
+        ...plugins.map(pluginClass => {
+          const plugin = new pluginClass({ canvas: canvasRef.current! });
+          return {
+            [plugin.name!]: plugin,
+          };
+        }),
       ),
     );
 
@@ -81,21 +83,18 @@ export const Atelier = forwardRef(
     useEffect(() => {
       if (!canvasRef.current) return;
 
-      plugins.forEach(plugin => {
-        plugin.canvas = canvasRef.current!;
-      });
-
       setCurrentPlugins(
         Object.assign(
           {},
-          ...plugins.map(plugin => {
+          ...plugins.map(pluginClass => {
+            const plugin = new pluginClass({ canvas: canvasRef.current! });
             return {
-              [plugin.name]: plugin,
+              [plugin.name!]: plugin,
             };
           }),
         ),
       );
-    }, [plugins]);
+    }, [JSON.stringify(plugins)]);
 
     const handlers = useMemo(() => {
       let drawing = false;
