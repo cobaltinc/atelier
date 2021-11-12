@@ -45,8 +45,8 @@ export const Default = () => {
 
 class DashPlugin extends Plugin {
   name: string = 'dash';
-  lastX: number;
-  lastY: number;
+  prevX: number;
+  prevY: number;
 
   draw(data: DrawingInterface) {
     super.draw(data);
@@ -55,21 +55,19 @@ class DashPlugin extends Plugin {
     const context = this.canvas?.getContext('2d');
     context.setLineDash([5, 30]);
 
-    if (state === 'draw-started') {
-      Object.assign(this, {
-        lastX: x,
-        lastY: y,
-      });
-    } else {
+    const prevX = this.prevX || x;
+    const prevY = this.prevY || y;
+
+    if (state === 'draw-started' || state === 'drawing') {
       context.beginPath();
-      context.moveTo(this.lastX, this.lastY);
+      context.moveTo(prevX, prevY);
       context.lineTo(x, y);
       context.stroke();
       context.closePath();
 
       Object.assign(this, {
-        lastX: x,
-        lastY: y,
+        prevX: x,
+        prevY: y,
       });
     }
   }

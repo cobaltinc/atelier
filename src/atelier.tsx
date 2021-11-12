@@ -185,6 +185,6 @@ export const Atelier = forwardRef(
       clear: handleClear,
     }));
 
-    return <canvas ref={canvasRef} {...handlers} style={{ ...canvasDefaultStyle, ...canvasSizeStyle, ...style }} className={className} />;
+    return <canvas ref={canvasRef} {...handlers} style={{ ...style, ...canvasDefaultStyle, ...canvasSizeStyle }} className={className} />;
   },
 );
