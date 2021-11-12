@@ -12,16 +12,14 @@ interface BrushPluginInterface extends PluginInterface {
 }
 
 export class BrushPlugin extends Plugin {
+  name: string = 'brush';
   coord: Coord = { x: 0, y: 0, oldX: 0, oldY: 0 };
   midCoord: Coord = { x: 0, y: 0, oldX: 0, oldY: 0 };
   oldLineWidth: number = 0;
   enablePressure: boolean = true;
 
   constructor(initialValues?: BrushPluginInterface) {
-    super({
-      ...initialValues,
-      name: 'brush',
-    });
+    super(initialValues);
 
     this.enablePressure = !!initialValues?.enablePressure;
   }

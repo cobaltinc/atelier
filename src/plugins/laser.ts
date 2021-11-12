@@ -1,14 +1,8 @@
 import { DrawingInterface, Plugin, PluginInterface } from './plugin';
 
 export class LaserPlugin extends Plugin {
+  name: string = 'laser';
   snapshotImage?: ImageData;
-
-  constructor(initialValues?: PluginInterface) {
-    super({
-      ...initialValues,
-      name: 'laser',
-    });
-  }
 
   draw(data: DrawingInterface) {
     super.draw(data);

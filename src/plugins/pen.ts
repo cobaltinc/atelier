@@ -8,15 +8,9 @@ interface Coord {
 }
 
 export class PenPlugin extends Plugin {
+  name: string = 'pen';
   coord: Coord = { x: 0, y: 0, oldX: 0, oldY: 0 };
   midCoord: Coord = { x: 0, y: 0, oldX: 0, oldY: 0 };
-
-  constructor(initialValues?: PluginInterface) {
-    super({
-      ...initialValues,
-      name: 'pen',
-    });
-  }
 
   draw(data: DrawingInterface) {
     super.draw(data);

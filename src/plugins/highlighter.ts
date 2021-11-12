@@ -8,17 +8,11 @@ interface Coord {
 }
 
 export class HighlighterPlugin extends Plugin {
+  name: string = 'highlighter';
   coord: Coord = { x: 0, y: 0, oldX: 0, oldY: 0 };
   midCoord: Coord = { x: 0, y: 0, oldX: 0, oldY: 0 };
   screenCanvas?: HTMLCanvasElement;
   snapshotImage?: ImageData;
-
-  constructor(initialValues?: PluginInterface) {
-    super({
-      ...initialValues,
-      name: 'highlighter',
-    });
-  }
 
   draw(data: DrawingInterface) {
     super.draw(data);

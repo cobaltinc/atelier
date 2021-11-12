@@ -1,15 +1,9 @@
 import { DrawingInterface, Plugin, PluginInterface } from './plugin';
 
 export class EraserPlugin extends Plugin {
+  name: string = 'eraser';
   prevX?: number;
   prevY?: number;
-
-  constructor(initialValues?: PluginInterface) {
-    super({
-      ...initialValues,
-      name: 'eraser',
-    });
-  }
 
   draw(data: DrawingInterface) {
     super.draw(data);
