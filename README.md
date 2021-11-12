@@ -2,7 +2,7 @@
   Atelier
 </h1>
 
-<p align="center"><strong>Drawing component for React built by <a href="https://cobalt.run">Cobalt, Inc.</a></strong></p>
+<p align="center"><strong>Expandable drawing component for React built by <a href="https://cobalt.run">Cobalt, Inc.</a></strong></p>
 
 <p align='center'>
   <a href="https://cobalt.run">
