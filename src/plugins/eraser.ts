@@ -1,4 +1,4 @@
-import { DrawingInterface, Plugin, PluginInterface } from './plugin';
+import { DrawingInterface, Plugin } from './plugin';
 
 export class EraserPlugin extends Plugin {
   name: string = 'eraser';

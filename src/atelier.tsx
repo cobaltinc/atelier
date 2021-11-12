@@ -83,8 +83,6 @@ export const Atelier = forwardRef(
     useEffect(() => {
       if (!canvasRef.current) return;
 
-      console.log(currentPlugins);
-
       setCurrentPlugins(
         Object.assign(
           {},
@@ -177,11 +175,11 @@ export const Atelier = forwardRef(
             onMouseOut: handleDrawFinish,
           }
         : {};
-    }, [currentPlugins, command, lineWidth, color]);
+    }, [currentPlugins, command, lineWidth, color, width, height, scale]);
 
     const handleClear = useCallback(() => {
       canvasRef.current?.getContext('2d')?.clearRect(0, 0, width, height);
-    }, []);
+    }, [width, height]);
 
     useImperativeHandle(ref, () => ({
       clear: handleClear,
