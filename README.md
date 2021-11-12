@@ -1,5 +1,5 @@
 <h1 align='center'>
-  Atelier
+  Atelier 🎨
 </h1>
 
 <p align="center"><strong>Expandable drawing component for React built by <a href="https://cobalt.run">Cobalt, Inc.</a></strong></p>
@@ -35,26 +35,85 @@ Demo page: [`https://cobaltinc.github.io/atelier`](https://cobaltinc.github.io/a
 
 Prop | Description | Default
 ---- | ----------- | -------
-`command` |  | `pen`
-`color` |  | `#000000`
-`lineWidth` |  | `2`
-`width` |  | `800`
-`height` |  | `600`
-`enableDraw` |  | `true`
-`enablePressure` |  | `false`
-`plugins` |  | `[PenPlugin]`
-`style` | 
-`className` | 
+`command` | Set the name of registered plugin | `pen`
+`color` | Set the color of the line | `#000000`
+`lineWidth` | Set the width of the line | `2`
+`width` | Set the width of the canvas | `800`
+`height` | Set the height of the canvas | `600`
+`enableDraw` | Set to `true` or `false` to enable or disable draw the canvas | `true`
+`enablePressure` | Set to `true` or `false` to enable or disable pressure the canvas | `false`
+`plugins` | Register the plugins to use | `[PenPlugin]`
+`style` | Add inline styles to the root element
+`className` | Add className to the root element
 
-### 🖋️ Default Plugins
-* PenPlugin
-* EraserPlugin
-* BrushPlugin
-* HighlighterPlugin
-* LaserPlugin
+### Instance Methods
+Use `ref` to call instance methods. See the [demo page](https://cobaltinc.github.io/atelier) for an example of this.
+Prop | Description
+---- | -----------
+`clear()` | Erase everything on the canvas
+
+## 🖋️ Default Plugins
+<table>
+  <tr>
+    <th>PenPlugin</th><th>BrushPlugin</th><th>ErasePlugin</th>
+  </tr>
+  <tr>
+    <td><img src="https://user-images.githubusercontent.com/3623695/141398823-7fe13e29-cbf7-4ae3-84fa-b14e88659148.gif" width='187' alt="PenPlugin gif"></td>
+    <td><img src="https://user-images.githubusercontent.com/3623695/141398991-4f70f01f-59bd-494e-9f69-ce39372af698.gif" width='187' alt="BrushPlugin gif"></td>
+    <td><img src="https://user-images.githubusercontent.com/3623695/141399191-aa396b83-7e05-4c5d-b075-3b8ebd701274.gif" width='187' alt="ErasePlugin gif"></td>
+  </tr>
+  <tr>
+    <th>HighlighterPlugin</th><th>LaserPlugin</th>
+  </tr>
+  <tr>
+    <td><img src="https://user-images.githubusercontent.com/3623695/141399532-d29a3454-d5c0-45f3-a4df-6f8794f382bd.gif" width='187' alt="HighlighterPlugin gif"></td>
+    <td><img src="https://user-images.githubusercontent.com/3623695/141399656-677cb722-8556-477d-8106-635d548c350c.gif" width='187' alt="LaserPlugin gif"></td>
+  </tr>
+</table>
 
 ## 🖌️ Custom Plugin
-WIP
+
+If you want new plugin, you can make easily.
+
+```tsx
+class DashPlugin extends Plugin {
+  name: string = 'dash'; // Required
+  lastX: number;
+  lastY: number;
+
+  draw(data: DrawingInterface) {
+    super.draw(data);
+
+    const { x, y, state } = data;
+    const context = this.canvas.getContext('2d');
+    context.setLineDash([5, 30]);
+
+    if (state === 'draw-started') {
+      Object.assign(this, {
+        lastX: x,
+        lastY: y,
+      });
+    } else {
+      context.beginPath();
+      context.moveTo(this.lastX, this.lastY);
+      context.lineTo(x, y);
+      context.stroke();
+      context.closePath();
+
+      Object.assign(this, {
+        lastX: x,
+        lastY: y,
+      });
+    }
+  }
+}
+
+<Atelier command="dash" plugins={[DashPlugin]} />
+```
+
+And the result:
+
+<img src="https://user-images.githubusercontent.com/3623695/141399812-9f8e3645-ad40-4d16-887e-0de485c7a720.gif" width="500" alt="DashPlugin gif">
 
 ## :page_facing_up: License
 
