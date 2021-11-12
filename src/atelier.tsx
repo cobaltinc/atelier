@@ -42,7 +42,7 @@ export const Atelier = forwardRef(
     const [currentPlugins, setCurrentPlugins] = useState<PluginMap>(
       Object.assign(
         {},
-        ...plugins.map(pluginClass => {
+        ...plugins.map((pluginClass) => {
           const plugin = new pluginClass({ canvas: canvasRef.current! });
           return {
             [plugin.name!]: plugin,
@@ -83,10 +83,12 @@ export const Atelier = forwardRef(
     useEffect(() => {
       if (!canvasRef.current) return;
 
+      console.log(currentPlugins);
+
       setCurrentPlugins(
         Object.assign(
           {},
-          ...plugins.map(pluginClass => {
+          ...plugins.map((pluginClass) => {
             const plugin = new pluginClass({ canvas: canvasRef.current! });
             return {
               [plugin.name!]: plugin,
@@ -172,6 +174,7 @@ export const Atelier = forwardRef(
             onTouchMove: handleDrawing,
             onMouseUp: handleDrawFinish,
             onTouchEnd: handleDrawFinish,
+            onMouseOut: handleDrawFinish,
           }
         : {};
     }, [currentPlugins, command, lineWidth, color]);

@@ -2107,14 +2107,6 @@
     posthtml-render "^3.0.0"
     semver "^5.4.1"
 
-"@parcel/transformer-typescript-tsc@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@parcel/transformer-typescript-tsc/-/transformer-typescript-tsc-2.0.1.tgz#83e96080b50151b3fc5d0a17ac084811f1fd63e6"
-  integrity sha512-bAlYYFhQFJWx/ij2CjHyzQbz5mcVI6HQRLgpCrZcL7C+z4VozBEjlo313akImU9rIKKCqA5Y3NjduWTySFYfLg==
-  dependencies:
-    "@parcel/plugin" "^2.0.1"
-    "@parcel/ts-utils" "^2.0.1"
-
 "@parcel/transformer-typescript-types@^2.0.1":
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/@parcel/transformer-typescript-types/-/transformer-typescript-types-2.0.1.tgz#b4016c15ecd421273a2986bd1105fa58a43bf6ca"
@@ -2172,17 +2164,6 @@
     nullthrows "^1.1.1"
     open "^7.0.3"
     terminal-link "^2.1.1"
-
-"@parcel/validator-typescript@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@parcel/validator-typescript/-/validator-typescript-2.0.1.tgz#0705767c7591bc720fcbe0e626bb952f55956c72"
-  integrity sha512-KVW/3c1KHP0mTUrAV3G3xbeSpgNNyiyfsoSkivNFWxMons/FJS2qitHK/1h3HjeGgIm9vIcvdasLjvRMAmT+1w==
-  dependencies:
-    "@parcel/diagnostic" "^2.0.1"
-    "@parcel/plugin" "^2.0.1"
-    "@parcel/ts-utils" "^2.0.1"
-    "@parcel/types" "^2.0.1"
-    "@parcel/utils" "^2.0.1"
 
 "@parcel/watcher@^2.0.0":
   version "2.0.1"
