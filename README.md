@@ -71,6 +71,20 @@ Prop | Description
   </tr>
 </table>
 
+```jsx
+import React from 'react'
+import {
+  Atelier,
+  PenPlugin,
+  BrushPlugin,
+  ErasePlugin,
+  HighlighterPlugin,
+  LaserPlugin
+} from '@cobaltinc/atelier'
+
+<Atelier plugins={[PenPlugin, BrushPlugin, ErasePlugin, HighlighterPlugin, LaserPlugin]} />
+```
+
 ## 🖌️ Custom Plugin
 
 If you want new plugin, you can make easily.
