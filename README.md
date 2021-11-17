@@ -55,7 +55,7 @@ Prop | Description
 ## 🖋️ Default Plugins
 <table>
   <tr>
-    <th>PenPlugin</th><th>BrushPlugin</th><th>ErasePlugin</th>
+    <th>PenPlugin</th><th>BrushPlugin<br/>(Support pressure)</th><th>ErasePlugin</th>
   </tr>
   <tr>
     <td><img src="https://user-images.githubusercontent.com/3623695/141398823-7fe13e29-cbf7-4ae3-84fa-b14e88659148.gif" width='187' alt="PenPlugin gif"></td>
