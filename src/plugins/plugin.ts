@@ -3,9 +3,10 @@ interface PluginInterface {
   canvas?: HTMLCanvasElement;
 }
 
-type DrawingState = "draw-started" | "drawing" | "draw-finished";
+type DrawingState = 'draw-started' | 'drawing' | 'draw-finished';
 
 interface DrawingInterface {
+  command: string;
   x: number;
   y: number;
   pressure?: number;
@@ -28,27 +29,27 @@ export class Plugin implements PluginInterface {
   }
 
   draw(data: DrawingInterface) {
-    const context = this.canvas?.getContext("2d");
+    const context = this.canvas?.getContext('2d');
     if (!context) return;
 
     Object.assign(context, {
-      globalCompositeOperation: "source-over",
+      globalCompositeOperation: 'source-over',
       strokeStyle: data.color,
-      lineCap: "round",
-      lineJoin: "round",
-      shadowColor: "",
+      lineCap: 'round',
+      lineJoin: 'round',
+      shadowColor: '',
       shadowOffsetX: 0,
       shadowOffsetY: 0,
       shadowBlur: 0,
       lineWidth: data.lineWidth,
-      textAlign: "left",
-      textBaseline: "top",
-      direction: "ltr",
+      textAlign: 'left',
+      textBaseline: 'top',
+      direction: 'ltr',
       lineDashOffset: 0,
       miterLimit: 0,
       globalAlpha: 1,
       fillStyle: data.color,
-    })
+    });
   }
 }
 

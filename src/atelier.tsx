@@ -1,22 +1,67 @@
 import React, { forwardRef, Ref, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import { PenPlugin, Plugin } from './plugins';
+import { DrawingInterface, DrawingState, PenPlugin, Plugin } from './plugins';
 import { DrawEvent } from './types';
 import { calculateCoord, calculatePressure } from './utils';
 
+type ChangeEventType = 'draw' | 'clear';
+export type AtelierChangeEvent = {
+  type: ChangeEventType;
+  data?: DrawingInterface;
+};
+
 interface AtelierProps {
+  /**
+   * Drawing command
+   */
   command?: string;
+
+  /**
+   * Color of the line when drawing.
+   */
   color?: string;
+
+  /**
+   * Thickness of the line when drawing.
+   */
   lineWidth?: number;
+
+  /**
+   * Canvas width
+   */
   width?: number;
+
+  /**
+   * Canvas height
+   */
   height?: number;
+
+  /**
+   * If you set enableDraw to false, you cannot draw.
+   */
   enableDraw?: boolean;
+
+  /**
+   * If you set enablePressure to true, pen pressure is applied.
+   */
   enablePressure?: boolean;
+
+  /**
+   * Register the plugin to be used.
+   */
   plugins?: typeof Plugin[];
+
+  /**
+   * Fired when an alteration to canvas is commited.
+   */
+  onChange?(e: AtelierChangeEvent): void;
+
   style?: React.CSSProperties;
+
   className?: string;
 }
 
 export type AtelierRef = {
+  draw(e: AtelierChangeEvent): void;
   clear(): void;
 };
 
@@ -33,6 +78,7 @@ export const Atelier = forwardRef(
       enableDraw = true,
       enablePressure = false,
       plugins = [PenPlugin],
+      onChange,
       style,
       className,
     }: AtelierProps,
@@ -107,7 +153,8 @@ export const Atelier = forwardRef(
         const pressure = enablePressure ? calculatePressure(e) : 1;
         const touchType = 'touches' in e ? (e as any).touches[0].touchType : undefined;
 
-        currentPlugins[command].draw({
+        const drawingData = {
+          command,
           x,
           y,
           width,
@@ -116,9 +163,11 @@ export const Atelier = forwardRef(
           lineWidth,
           color,
           pressure,
-          state: 'draw-started',
+          state: 'draw-started' as DrawingState,
           touchType,
-        });
+        };
+        currentPlugins[command].draw(drawingData);
+        onChange?.({ type: 'draw', data: drawingData });
 
         drawing = true;
       };
@@ -131,7 +180,8 @@ export const Atelier = forwardRef(
         const pressure = enablePressure ? calculatePressure(e) : 1;
         const touchType = 'touches' in e ? (e as any).touches[0].touchType : undefined;
 
-        currentPlugins[command].draw({
+        const drawingData = {
+          command,
           x,
           y,
           width,
@@ -140,9 +190,11 @@ export const Atelier = forwardRef(
           lineWidth,
           color,
           pressure,
-          state: 'drawing',
+          state: 'drawing' as DrawingState,
           touchType,
-        });
+        };
+        currentPlugins[command].draw(drawingData);
+        onChange?.({ type: 'draw', data: drawingData });
       };
 
       const handleDrawFinish = (e: DrawEvent) => {
@@ -150,7 +202,8 @@ export const Atelier = forwardRef(
         if (!canvasRef.current || !drawing) return;
 
         const { x, y } = calculateCoord(e, canvasRef.current);
-        currentPlugins[command].draw({
+        const drawingData = {
+          command,
           x,
           y,
           width,
@@ -158,8 +211,10 @@ export const Atelier = forwardRef(
           scale,
           lineWidth,
           color,
-          state: 'draw-finished',
-        });
+          state: 'draw-finished' as DrawingState,
+        };
+        currentPlugins[command].draw(drawingData);
+        onChange?.({ type: 'draw', data: drawingData });
 
         drawing = false;
       };
@@ -175,13 +230,27 @@ export const Atelier = forwardRef(
             onMouseOut: handleDrawFinish,
           }
         : {};
-    }, [currentPlugins, command, lineWidth, color, width, height, scale]);
+    }, [currentPlugins, command, lineWidth, color, width, height, scale, enableDraw]);
+
+    const handleCommit = useCallback(
+      (e: AtelierChangeEvent) => {
+        if (e.type === 'draw') {
+          const data = e.data!;
+          currentPlugins[data.command].draw(data);
+        } else if (e.type === 'clear') {
+          canvasRef.current?.getContext('2d')?.clearRect(0, 0, width, height);
+        }
+      },
+      [currentPlugins],
+    );
 
     const handleClear = useCallback(() => {
       canvasRef.current?.getContext('2d')?.clearRect(0, 0, width, height);
+      onChange?.({ type: 'clear' });
     }, [width, height]);
 
     useImperativeHandle(ref, () => ({
+      draw: handleCommit,
       clear: handleClear,
     }));
 

@@ -1,5 +1,16 @@
-import React, { useRef, useState } from 'react';
-import { Atelier, AtelierRef, BrushPlugin, EraserPlugin, HighlighterPlugin, LaserPlugin, PenPlugin, Plugin, DrawingInterface } from '../src';
+import React, { useCallback, useRef, useState } from 'react';
+import {
+  Atelier,
+  AtelierRef,
+  BrushPlugin,
+  EraserPlugin,
+  HighlighterPlugin,
+  LaserPlugin,
+  PenPlugin,
+  Plugin,
+  DrawingInterface,
+  AtelierChangeEvent,
+} from '../src';
 
 export default {
   component: Atelier,
@@ -99,6 +110,114 @@ export const CustomPlugin = () => {
         enableDraw
         style={{ border: '1px solid black' }}
       />
+    </Wrapper>
+  );
+};
+
+interface ChangeHistory {
+  timestamp: number;
+  data: AtelierChangeEvent;
+}
+
+interface Recording {
+  date: Date;
+  histories: ChangeHistory[];
+}
+
+export const Recording = () => {
+  const ref = useRef<AtelierRef>();
+  const [command, setCommand] = useState<string>('pen');
+  const [lineWidth, setLineWidth] = useState<number>(4);
+  const [color, setColor] = useState<string>('#000000');
+  const [recording, setRecording] = useState(false);
+  const [recordingList, setRecordingList] = useState<Recording[]>([]);
+
+  const eventHistories = useRef<ChangeHistory[]>([]);
+  const intervalId = useRef<ReturnType<typeof setInterval>>();
+
+  const handleRecordingStart = useCallback(() => {
+    ref.current.clear();
+    eventHistories.current = [];
+    setRecording(true);
+  }, []);
+
+  const handleRecordingStop = useCallback(() => {
+    setRecordingList([...recordingList, { date: new Date(), histories: eventHistories.current }]);
+    eventHistories.current = [];
+    setRecording(false);
+    ref.current.clear();
+  }, [recordingList, eventHistories]);
+
+  const handleReplay = useCallback((recording: Recording) => {
+    clearInterval(intervalId.current);
+    setRecording(false);
+    ref.current.clear();
+
+    const histories = [...recording.histories];
+    const begin = Date.now();
+    const startTimestamp = histories[0].timestamp;
+    intervalId.current = setInterval(() => {
+      if (histories.length === 0) {
+        clearInterval(intervalId.current);
+        return;
+      }
+
+      while (histories.length) {
+        const history = histories[0];
+        if (Date.now() - begin >= history.timestamp - startTimestamp) {
+          ref.current.draw(histories.shift().data);
+        } else {
+          break;
+        }
+      }
+    }, 10);
+  }, []);
+
+  return (
+    <Wrapper>
+      <button onClick={() => setCommand('laser')}>Laser</button>
+      <button onClick={() => setCommand('pen')}>Pen</button>
+      <button onClick={() => setCommand('brush')}>Brush</button>
+      <button onClick={() => setCommand('eraser')}>Eraser</button>
+      <button onClick={() => setCommand('highlighter')}>Highlighter</button>
+      <button onClick={() => ref.current.clear()}>Clear</button>
+      <input type="color" onChange={(e) => setColor(e.currentTarget.value)} />
+      <input type="range" onChange={(e) => setLineWidth(parseInt(e.currentTarget.value))} defaultValue="4" min="1" max="40" step="1" />
+
+      <br />
+
+      <button disabled={recording} onClick={handleRecordingStart}>
+        Start recording
+      </button>
+      <button disabled={!recording} onClick={handleRecordingStop}>
+        Stop recording
+      </button>
+
+      <br />
+
+      <Atelier
+        ref={ref}
+        command={command}
+        lineWidth={lineWidth}
+        color={color}
+        plugins={[PenPlugin, EraserPlugin, LaserPlugin, HighlighterPlugin, BrushPlugin]}
+        enablePressure
+        enableDraw={recording}
+        onChange={(e) => eventHistories.current.push({ timestamp: Date.now(), data: e })}
+        style={{ border: '1px solid black' }}
+      />
+
+      <div>
+        <h3>Recording list</h3>
+        <ul>
+          {recordingList.map((item) => (
+            <div key={item.date.toISOString()}>
+              {item.date.toISOString()}
+              <button onClick={() => handleReplay(item)}>Replay</button>
+            </div>
+          ))}
+        </ul>
+      </div>
     </Wrapper>
   );
 };
