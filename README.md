@@ -38,18 +38,22 @@ Prop | Description | Default
 `command` | Set the name of registered plugin | `pen`
 `color` | Set the color of the line | `#000000`
 `lineWidth` | Set the width of the line | `2`
-`width` | Set the width of the canvas | `800`
-`height` | Set the height of the canvas | `600`
+`width` | Set the width of the DOM | `800`
+`height` | Set the height of the DOM | `600`
+`canvasWidth` | Set the width of the canvas
+`canvasHeight` | Set the height of the canvas
 `enableDraw` | Set to `true` or `false` to enable or disable draw the canvas | `true`
 `enablePressure` | Set to `true` or `false` to enable or disable pressure the canvas | `false`
 `plugins` | Register the plugins to use | `[PenPlugin]`
 `style` | Add inline styles to the root element
 `className` | Add className to the root element
+`onChange(e: AtelierChangeEvent)` | Fired when an alteration to canvas is commited
 
 ### Instance Methods
 Use `ref` to call instance methods. See the [demo page](https://cobaltinc.github.io/atelier) for an example of this.
 Prop | Description
 ---- | -----------
+`draw(e: AtelierChangeEvent)` | Draw programmatically on the canvas
 `clear()` | Erase everything on the canvas
 
 ## 🖋️ Default Plugins
