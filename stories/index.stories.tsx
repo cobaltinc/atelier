@@ -35,6 +35,8 @@ export const Default = () => {
       <button onClick={() => setCommand('eraser')}>Eraser</button>
       <button onClick={() => setCommand('highlighter')}>Highlighter</button>
       <button onClick={() => ref.current.clear()}>Clear</button>
+      <button onClick={() => ref.current.undo()}>Undo</button>
+      <button onClick={() => ref.current.redo()}>Redo</button>
       <input type="color" onChange={(e) => setColor(e.currentTarget.value)} />
       <input type="range" onChange={(e) => setLineWidth(parseInt(e.currentTarget.value))} defaultValue="4" min="1" max="40" step="1" />
 
@@ -120,7 +122,7 @@ export const CustomPlugin = () => {
 
 interface ChangeHistory {
   timestamp: number;
-  data: AtelierChangeEvent;
+  event: AtelierChangeEvent;
 }
 
 interface Recording {
@@ -142,7 +144,7 @@ export const Recording = () => {
   const intervalId = useRef<ReturnType<typeof setInterval>>();
 
   const handleRecordingStart = useCallback(() => {
-    ref.current.clear();
+    ref.current.clear({ commit: false, fireOnChange: false });
     eventHistories.current = [];
     setRecording(true);
   }, []);
@@ -151,13 +153,14 @@ export const Recording = () => {
     setRecordingList([...recordingList, { date: new Date(), histories: eventHistories.current }]);
     eventHistories.current = [];
     setRecording(false);
-    ref.current.clear();
-  }, [recordingList, eventHistories]);
+    ref.current.clear({ commit: false, fireOnChange: false });
+  }, [recordingList]);
 
   const handleReplay = useCallback((recording: Recording) => {
     clearInterval(intervalId.current);
     setRecording(false);
-    ref.current.clear();
+    ref.current.clear({ commit: false, fireOnChange: false });
+    ref.current.clearHistories();
 
     const histories = [...recording.histories];
     const begin = Date.now();
@@ -171,7 +174,14 @@ export const Recording = () => {
       while (histories.length) {
         const history = histories[0];
         if (Date.now() - begin >= history.timestamp - startTimestamp) {
-          ref.current.draw(histories.shift().data);
+          const event = histories.shift().event;
+
+          if (event.type !== 'draw') console.log(event);
+
+          if (event.type === 'draw') ref.current.draw(event.data);
+          else if (event.type === 'clear') ref.current.clear();
+          else if (event.type === 'redo') ref.current.redo();
+          else if (event.type === 'undo') ref.current.undo();
         } else {
           break;
         }
@@ -195,6 +205,8 @@ export const Recording = () => {
         <button onClick={() => setCommand('eraser')}>Eraser</button>
         <button onClick={() => setCommand('highlighter')}>Highlighter</button>
         <button onClick={() => ref.current.clear()}>Clear</button>
+        <button onClick={() => ref.current.undo()}>Undo</button>
+        <button onClick={() => ref.current.redo()}>Redo</button>
         <input type="color" onChange={(e) => setColor(e.currentTarget.value)} />
         <input type="range" onChange={(e) => setLineWidth(parseInt(e.currentTarget.value))} defaultValue="4" min="1" max="40" step="1" />
       </div>
@@ -220,7 +232,7 @@ export const Recording = () => {
         plugins={[PenPlugin, EraserPlugin, LaserPlugin, HighlighterPlugin, BrushPlugin]}
         enablePressure
         enableDraw={recording}
-        onChange={(e) => eventHistories.current.push({ timestamp: Date.now(), data: e })}
+        onChange={(e) => eventHistories.current.push({ timestamp: Date.now(), event: e })}
         style={{ border: '1px solid black' }}
       />
 

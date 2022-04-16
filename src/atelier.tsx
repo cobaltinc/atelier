@@ -3,7 +3,7 @@ import { DrawingInterface, DrawingState, PenPlugin, Plugin } from './plugins';
 import { DrawEvent } from './types';
 import { calculateCoord, calculatePressure } from './utils';
 
-type ChangeEventType = 'draw' | 'clear';
+type ChangeEventType = 'draw' | 'clear' | 'redo' | 'undo';
 export type AtelierChangeEvent = {
   type: ChangeEventType;
   data?: DrawingInterface;
@@ -70,9 +70,17 @@ interface AtelierProps {
   className?: string;
 }
 
+interface Options {
+  commit?: boolean;
+  fireOnChange?: boolean;
+}
+
 export type AtelierRef = {
-  draw(e: AtelierChangeEvent): void;
-  clear(): void;
+  clearHistories(): void;
+  draw(e: DrawingInterface, options?: Options): void;
+  clear(options?: Options): void;
+  redo(options?: Options): void;
+  undo(options?: Options): void;
 };
 
 type PluginMap = { [key: string]: Plugin };
@@ -97,6 +105,8 @@ export const Atelier = forwardRef(
     ref: Ref<AtelierRef>,
   ) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const histories = useRef<AtelierChangeEvent[][]>([]);
+    const undoList = useRef<AtelierChangeEvent[][]>([]);
     const [currentPlugins, setCurrentPlugins] = useState<PluginMap>(
       Object.assign(
         {},
@@ -138,7 +148,7 @@ export const Atelier = forwardRef(
       canvasRef.current.height = (canvasHeight || height) * scale;
 
       canvasRef.current.getContext('2d')?.scale(scale, scale);
-    }, [scale, width, height]);
+    }, [scale, canvasWidth, canvasHeight, width, height]);
 
     useEffect(() => {
       if (!canvasRef.current) return;
@@ -155,6 +165,97 @@ export const Atelier = forwardRef(
         ),
       );
     }, [JSON.stringify(plugins)]);
+
+    const handleCommit = useCallback(
+      (e: AtelierChangeEvent) => {
+        undoList.current = [];
+        if (e.type === 'draw') {
+          const data = e.data;
+
+          if (data?.state === 'draw-started') {
+            histories.current.push([e]);
+          } else {
+            const length = histories.current.length;
+            histories.current[length - 1].push(e);
+          }
+        } else if (e) {
+          histories.current.push([e]);
+        }
+      },
+      [histories],
+    );
+
+    const handleDraw = useCallback(
+      (data: DrawingInterface, options: Options = { commit: true, fireOnChange: true }) => {
+        const drawingData = {
+          ...data,
+          x: (data.x / data.width) * canvasWidth,
+          y: (data.y / data.height) * canvasHeight,
+          width,
+          height,
+          lineWidth: (data.lineWidth / data.width) * width,
+        };
+        currentPlugins[data.command].draw(drawingData);
+        options?.fireOnChange && onChange?.({ type: 'draw', data: drawingData });
+        options?.commit && handleCommit({ type: 'draw', data: drawingData });
+      },
+      [currentPlugins, canvasWidth, canvasHeight, width, height],
+    );
+
+    const handleClear = useCallback(
+      (options: Options = { commit: true, fireOnChange: true }) => {
+        canvasRef.current?.getContext('2d')?.clearRect(0, 0, canvasWidth, canvasHeight);
+        options?.fireOnChange && onChange?.({ type: 'clear' });
+        options?.commit && handleCommit({ type: 'clear' });
+      },
+      [canvasWidth, canvasHeight],
+    );
+
+    const handleRedo = useCallback(
+      (options: Options = { fireOnChange: true }) => {
+        if (undoList.current.length === 0) return;
+        histories.current.push(undoList.current.pop()!);
+
+        handleClear({ commit: false, fireOnChange: false });
+        histories.current
+          .reduce((prev, curr) => [...prev, ...curr], [])
+          .forEach((event) => {
+            if (event.type === 'draw') handleDraw(event.data!, { commit: false, fireOnChange: false });
+            else if (event.type === 'clear') handleClear({ commit: false, fireOnChange: false });
+          });
+
+        options?.fireOnChange && onChange?.({ type: 'redo' });
+      },
+      [handleDraw, handleClear, onChange],
+    );
+
+    const handleUndo = useCallback(
+      (options: Options = { fireOnChange: true }) => {
+        if (histories.current.length === 0) return;
+        undoList.current.push(histories.current.pop()!);
+
+        handleClear({ commit: false, fireOnChange: false });
+        histories.current
+          .reduce((prev, curr) => [...prev, ...curr], [])
+          .forEach((event) => {
+            if (event.type === 'draw') handleDraw(event.data!, { commit: false, fireOnChange: false });
+            else if (event.type === 'clear') handleClear({ commit: false, fireOnChange: false });
+          });
+
+        options?.fireOnChange && onChange?.({ type: 'undo' });
+      },
+      [handleDraw, handleClear, onChange],
+    );
+
+    useImperativeHandle(ref, () => ({
+      clearHistories: () => {
+        histories.current = [];
+      },
+      draw: handleDraw,
+      clear: handleClear,
+      redo: handleRedo,
+      undo: handleUndo,
+    }));
 
     const handlers = useMemo(() => {
       let drawing = false;
@@ -180,8 +281,7 @@ export const Atelier = forwardRef(
           state: 'draw-started' as DrawingState,
           touchType,
         };
-        currentPlugins[command].draw(drawingData);
-        onChange?.({ type: 'draw', data: drawingData });
+        handleDraw(drawingData);
 
         drawing = true;
       };
@@ -207,8 +307,7 @@ export const Atelier = forwardRef(
           state: 'drawing' as DrawingState,
           touchType,
         };
-        currentPlugins[command].draw(drawingData);
-        onChange?.({ type: 'draw', data: drawingData });
+        handleDraw(drawingData);
       };
 
       const handleDrawFinish = (e: DrawEvent) => {
@@ -227,8 +326,7 @@ export const Atelier = forwardRef(
           color,
           state: 'draw-finished' as DrawingState,
         };
-        currentPlugins[command].draw(drawingData);
-        onChange?.({ type: 'draw', data: drawingData });
+        handleDraw(drawingData);
 
         drawing = false;
       };
@@ -244,36 +342,7 @@ export const Atelier = forwardRef(
             onMouseOut: handleDrawFinish,
           }
         : {};
-    }, [currentPlugins, command, lineWidth, color, width, height, scale, enableDraw]);
-
-    const handleCommit = useCallback(
-      (e: AtelierChangeEvent) => {
-        if (e.type === 'draw') {
-          const data = e.data!;
-          currentPlugins[data.command].draw({
-            ...data,
-            x: (data.x / data.width) * canvasWidth,
-            y: (data.y / data.height) * canvasHeight,
-            width,
-            height,
-            lineWidth: (data.lineWidth / data.width) * width,
-          });
-        } else if (e.type === 'clear') {
-          canvasRef.current?.getContext('2d')?.clearRect(0, 0, canvasWidth, canvasHeight);
-        }
-      },
-      [currentPlugins, canvasWidth, canvasHeight, width, height],
-    );
-
-    const handleClear = useCallback(() => {
-      canvasRef.current?.getContext('2d')?.clearRect(0, 0, canvasWidth, canvasHeight);
-      onChange?.({ type: 'clear' });
-    }, [canvasWidth, canvasHeight]);
-
-    useImperativeHandle(ref, () => ({
-      draw: handleCommit,
-      clear: handleClear,
-    }));
+    }, [currentPlugins, handleDraw, command, lineWidth, color, width, height, scale, enableDraw]);
 
     return <canvas ref={canvasRef} {...handlers} style={{ ...style, ...canvasDefaultStyle, ...canvasSizeStyle }} className={className} />;
   },

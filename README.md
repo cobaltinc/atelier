@@ -53,7 +53,7 @@ Prop | Description | Default
 Use `ref` to call instance methods. See the [demo page](https://cobaltinc.github.io/atelier) for an example of this.
 Prop | Description
 ---- | -----------
-`draw(e: AtelierChangeEvent)` | Draw programmatically on the canvas
+`draw(e: DrawingInterface)` | Draw programmatically on the canvas
 `clear()` | Erase everything on the canvas
 
 ## 🖋️ Default Plugins
