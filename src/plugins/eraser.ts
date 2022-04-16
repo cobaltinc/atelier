@@ -25,6 +25,9 @@ export class EraserPlugin extends Plugin {
 
       this.prevX = x;
       this.prevY = y;
+    } else if (state === 'draw-finished') {
+      this.prevX = undefined;
+      this.prevY = undefined;
     }
   }
 }
