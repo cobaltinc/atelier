@@ -42,6 +42,8 @@ export const Default = () => {
 
       <Atelier
         ref={ref}
+        width={1280}
+        height={720}
         command={command}
         lineWidth={lineWidth}
         color={color}
@@ -102,6 +104,8 @@ export const CustomPlugin = () => {
 
       <Atelier
         ref={ref}
+        width={1280}
+        height={720}
         command={command}
         lineWidth={lineWidth}
         color={color}
@@ -126,6 +130,8 @@ interface Recording {
 
 export const Recording = () => {
   const ref = useRef<AtelierRef>();
+  const [width, setWidth] = useState(1280);
+  const [height, setHeight] = useState(720);
   const [command, setCommand] = useState<string>('pen');
   const [lineWidth, setLineWidth] = useState<number>(4);
   const [color, setColor] = useState<string>('#000000');
@@ -175,28 +181,39 @@ export const Recording = () => {
 
   return (
     <Wrapper>
-      <button onClick={() => setCommand('laser')}>Laser</button>
-      <button onClick={() => setCommand('pen')}>Pen</button>
-      <button onClick={() => setCommand('brush')}>Brush</button>
-      <button onClick={() => setCommand('eraser')}>Eraser</button>
-      <button onClick={() => setCommand('highlighter')}>Highlighter</button>
-      <button onClick={() => ref.current.clear()}>Clear</button>
-      <input type="color" onChange={(e) => setColor(e.currentTarget.value)} />
-      <input type="range" onChange={(e) => setLineWidth(parseInt(e.currentTarget.value))} defaultValue="4" min="1" max="40" step="1" />
+      <div>
+        Width:
+        <input type="number" value={width} onChange={(e) => setWidth(parseInt(e.target.value))} />
+        Height:
+        <input type="number" value={height} onChange={(e) => setHeight(parseInt(e.target.value))} />
+      </div>
 
-      <br />
+      <div>
+        <button onClick={() => setCommand('laser')}>Laser</button>
+        <button onClick={() => setCommand('pen')}>Pen</button>
+        <button onClick={() => setCommand('brush')}>Brush</button>
+        <button onClick={() => setCommand('eraser')}>Eraser</button>
+        <button onClick={() => setCommand('highlighter')}>Highlighter</button>
+        <button onClick={() => ref.current.clear()}>Clear</button>
+        <input type="color" onChange={(e) => setColor(e.currentTarget.value)} />
+        <input type="range" onChange={(e) => setLineWidth(parseInt(e.currentTarget.value))} defaultValue="4" min="1" max="40" step="1" />
+      </div>
 
-      <button disabled={recording} onClick={handleRecordingStart}>
-        Start recording
-      </button>
-      <button disabled={!recording} onClick={handleRecordingStop}>
-        Stop recording
-      </button>
+      <div>
+        <button disabled={recording} onClick={handleRecordingStart}>
+          Start recording
+        </button>
+        <button disabled={!recording} onClick={handleRecordingStop}>
+          Stop recording
+        </button>
+      </div>
 
       <br />
 
       <Atelier
         ref={ref}
+        width={width}
+        height={height}
         command={command}
         lineWidth={lineWidth}
         color={color}

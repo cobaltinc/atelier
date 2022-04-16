@@ -26,14 +26,24 @@ interface AtelierProps {
   lineWidth?: number;
 
   /**
-   * Canvas width
+   * DOM width
    */
   width?: number;
 
   /**
-   * Canvas height
+   * DOM height
    */
   height?: number;
+
+  /**
+   * Canvas width
+   */
+  canvasWidth?: number;
+
+  /**
+   * Canvas height
+   */
+  canvasHeight?: number;
 
   /**
    * If you set enableDraw to false, you cannot draw.
@@ -75,6 +85,8 @@ export const Atelier = forwardRef(
       lineWidth = 2,
       width = 800,
       height = 600,
+      canvasWidth: _canvasWidth,
+      canvasHeight: _canvasHeight,
       enableDraw = true,
       enablePressure = false,
       plugins = [PenPlugin],
@@ -98,6 +110,8 @@ export const Atelier = forwardRef(
     );
 
     const scale = typeof window === 'undefined' ? 1 : window.devicePixelRatio;
+    const canvasWidth = _canvasWidth || width;
+    const canvasHeight = _canvasHeight || height;
 
     const canvasDefaultStyle: React.CSSProperties = useMemo(
       () => ({
@@ -120,8 +134,8 @@ export const Atelier = forwardRef(
     useEffect(() => {
       if (!canvasRef.current) return;
 
-      canvasRef.current.width = width * scale;
-      canvasRef.current.height = height * scale;
+      canvasRef.current.width = (canvasWidth || width) * scale;
+      canvasRef.current.height = (canvasHeight || height) * scale;
 
       canvasRef.current.getContext('2d')?.scale(scale, scale);
     }, [scale, width, height]);
@@ -155,12 +169,12 @@ export const Atelier = forwardRef(
 
         const drawingData = {
           command,
-          x,
-          y,
-          width,
-          height,
+          x: (x * canvasWidth) / width,
+          y: (y * canvasHeight) / height,
+          width: canvasWidth,
+          height: canvasHeight,
+          lineWidth: (lineWidth * width) / canvasWidth,
           scale,
-          lineWidth,
           color,
           pressure,
           state: 'draw-started' as DrawingState,
@@ -182,12 +196,12 @@ export const Atelier = forwardRef(
 
         const drawingData = {
           command,
-          x,
-          y,
-          width,
-          height,
+          x: (x * canvasWidth) / width,
+          y: (y * canvasHeight) / height,
+          width: canvasWidth,
+          height: canvasHeight,
+          lineWidth: (lineWidth * width) / canvasWidth,
           scale,
-          lineWidth,
           color,
           pressure,
           state: 'drawing' as DrawingState,
@@ -204,12 +218,12 @@ export const Atelier = forwardRef(
         const { x, y } = calculateCoord(e, canvasRef.current);
         const drawingData = {
           command,
-          x,
-          y,
-          width,
-          height,
+          x: (x * canvasWidth) / width,
+          y: (y * canvasHeight) / height,
+          width: canvasWidth,
+          height: canvasHeight,
+          lineWidth: (lineWidth * width) / canvasWidth,
           scale,
-          lineWidth,
           color,
           state: 'draw-finished' as DrawingState,
         };
@@ -236,18 +250,25 @@ export const Atelier = forwardRef(
       (e: AtelierChangeEvent) => {
         if (e.type === 'draw') {
           const data = e.data!;
-          currentPlugins[data.command].draw(data);
+          currentPlugins[data.command].draw({
+            ...data,
+            x: (data.x / data.width) * canvasWidth,
+            y: (data.y / data.height) * canvasHeight,
+            width,
+            height,
+            lineWidth: (lineWidth / data.width) * canvasWidth,
+          });
         } else if (e.type === 'clear') {
-          canvasRef.current?.getContext('2d')?.clearRect(0, 0, width, height);
+          canvasRef.current?.getContext('2d')?.clearRect(0, 0, canvasWidth, canvasHeight);
         }
       },
-      [currentPlugins],
+      [currentPlugins, canvasWidth, canvasHeight, width, height],
     );
 
     const handleClear = useCallback(() => {
-      canvasRef.current?.getContext('2d')?.clearRect(0, 0, width, height);
+      canvasRef.current?.getContext('2d')?.clearRect(0, 0, canvasWidth, canvasHeight);
       onChange?.({ type: 'clear' });
-    }, [width, height]);
+    }, [canvasWidth, canvasHeight]);
 
     useImperativeHandle(ref, () => ({
       draw: handleCommit,
