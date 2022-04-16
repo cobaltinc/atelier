@@ -256,7 +256,7 @@ export const Atelier = forwardRef(
             y: (data.y / data.height) * canvasHeight,
             width,
             height,
-            lineWidth: (lineWidth / data.width) * canvasWidth,
+            lineWidth: (data.lineWidth / data.width) * width,
           });
         } else if (e.type === 'clear') {
           canvasRef.current?.getContext('2d')?.clearRect(0, 0, canvasWidth, canvasHeight);
