@@ -344,6 +344,6 @@ export const Atelier = forwardRef(
         : {};
     }, [currentPlugins, handleDraw, command, lineWidth, color, width, height, scale, enableDraw]);
 
-    return <canvas ref={canvasRef} {...handlers} style={{ ...style, ...canvasDefaultStyle, ...canvasSizeStyle }} className={className} />;
+    return <canvas ref={canvasRef} {...handlers} style={{ ...canvasDefaultStyle, ...canvasSizeStyle, ...style }} className={className} />;
   },
 );
