@@ -28,12 +28,12 @@ interface AtelierProps {
   /**
    * DOM width
    */
-  width?: number | string;
+  width?: number;
 
   /**
    * DOM height
    */
-  height?: number | string;
+  height?: number;
 
   /**
    * Canvas width
