@@ -28,12 +28,12 @@ interface AtelierProps {
   /**
    * DOM width
    */
-  width?: number;
+  width?: number | string;
 
   /**
    * DOM height
    */
-  height?: number;
+  height?: number | string;
 
   /**
    * Canvas width
@@ -148,7 +148,7 @@ export const Atelier = forwardRef(
       canvasRef.current.height = (canvasHeight || height) * scale;
 
       canvasRef.current.getContext('2d')?.scale(scale, scale);
-    }, [scale, canvasWidth, canvasHeight, width, height]);
+    }, []);
 
     useEffect(() => {
       if (!canvasRef.current) return;
@@ -189,11 +189,11 @@ export const Atelier = forwardRef(
       (data: DrawingInterface, options: Options = { commit: true, fireOnChange: true }) => {
         const drawingData = {
           ...data,
-          x: (data.x / data.width) * canvasWidth,
-          y: (data.y / data.height) * canvasHeight,
+          x: data.x,
+          y: data.y,
           width,
           height,
-          lineWidth: (data.lineWidth / data.width) * width,
+          lineWidth: data.lineWidth,
         };
         currentPlugins[data.command].draw(drawingData);
         options?.fireOnChange && onChange?.({ type: 'draw', data: drawingData });
@@ -274,7 +274,7 @@ export const Atelier = forwardRef(
           y: (y * canvasHeight) / height,
           width: canvasWidth,
           height: canvasHeight,
-          lineWidth: (lineWidth * width) / canvasWidth,
+          lineWidth: lineWidth,
           scale,
           color,
           pressure,
@@ -300,7 +300,7 @@ export const Atelier = forwardRef(
           y: (y * canvasHeight) / height,
           width: canvasWidth,
           height: canvasHeight,
-          lineWidth: (lineWidth * width) / canvasWidth,
+          lineWidth,
           scale,
           color,
           pressure,

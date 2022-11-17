@@ -226,6 +226,8 @@ export const Recording = () => {
         ref={ref}
         width={width}
         height={height}
+        canvasWidth={1920}
+        canvasHeight={1080}
         command={command}
         lineWidth={lineWidth}
         color={color}
