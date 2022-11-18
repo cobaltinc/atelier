@@ -192,8 +192,8 @@ export const Atelier = forwardRef(
           ...data,
           x: data.x,
           y: data.y,
-          width,
-          height,
+          width: data.width,
+          height: data.height,
           lineWidth: data.lineWidth,
         };
         currentPlugins[data.command].draw(drawingData);
@@ -276,7 +276,7 @@ export const Atelier = forwardRef(
           y: (y * canvasHeight) / height,
           width: canvasWidth,
           height: canvasHeight,
-          lineWidth: lineWidth,
+          lineWidth,
           scale,
           color,
           pressure,
@@ -323,7 +323,7 @@ export const Atelier = forwardRef(
           y: (y * canvasHeight) / height,
           width: canvasWidth,
           height: canvasHeight,
-          lineWidth: (lineWidth * width) / canvasWidth,
+          lineWidth,
           scale,
           color,
           state: 'draw-finished' as DrawingState,
