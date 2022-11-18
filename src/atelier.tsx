@@ -76,6 +76,7 @@ interface Options {
 }
 
 export type AtelierRef = {
+  canvas: HTMLCanvasElement;
   clearHistories(): void;
   draw(e: DrawingInterface, options?: Options): void;
   clear(options?: Options): void;
@@ -248,6 +249,7 @@ export const Atelier = forwardRef(
     );
 
     useImperativeHandle(ref, () => ({
+      canvas: canvasRef.current!,
       clearHistories: () => {
         histories.current = [];
       },
