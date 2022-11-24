@@ -200,7 +200,7 @@ export const Atelier = forwardRef(
         options?.fireOnChange && onChange?.({ type: 'draw', data: drawingData });
         options?.commit && handleCommit({ type: 'draw', data: drawingData });
       },
-      [currentPlugins, canvasWidth, canvasHeight, width, height],
+      [currentPlugins, canvasWidth, canvasHeight, width, height, onChange],
     );
 
     const handleClear = useCallback(
@@ -209,7 +209,7 @@ export const Atelier = forwardRef(
         options?.fireOnChange && onChange?.({ type: 'clear' });
         options?.commit && handleCommit({ type: 'clear' });
       },
-      [canvasWidth, canvasHeight],
+      [canvasWidth, canvasHeight, onChange],
     );
 
     const handleRedo = useCallback(
